@@ -5,9 +5,8 @@ thingies:
   - one
   - too
   - tree
+something: two things
 ---
-
-# Hello
 
 World! What's up I have a keyboard shortcut for you: \`Y\`. You like it?
 
@@ -18,6 +17,14 @@ public class MyClass {
   }
 }
 \`\`\`
+
+```csharp
+public class MyClass {
+  public void Hello() {
+    Debug.Log("Hello!");
+  }
+}
+```
 
 This is some \`text\` with "quotes" and shit.
 
