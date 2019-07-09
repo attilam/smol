@@ -22,7 +22,7 @@ Handlebars.registerHelper('inc', function (value, options) {
 })
 
 Handlebars.registerHelper('partial', function (value, options) {
-  return fs.readFileSync(`./layouts/partials/${value}.html`, 'utf8')
+  return fs.readFileSync(`./layouts/partials/${value}`, 'utf8')
 })
 
 function applyHandlebars (template, context) {
