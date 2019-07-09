@@ -1,5 +1,10 @@
 ---
 title: my new thing!
+layout: post
+thingies:
+  - one
+  - too
+  - tree
 ---
 
 # Hello
@@ -38,4 +43,6 @@ A ![pic](blah.gif)
 
 Some inline html:
 
+@@@
 <a href="http://blah.hu">blah!</a>
+@@@
