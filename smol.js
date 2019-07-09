@@ -1,7 +1,13 @@
 // === smol.js -- 2019 @attilam
 //
 const fs = require('fs')
+
+// === YAML & front matter stuff
+//
+const YAML = require('js-yaml')
 const fm = require('front-matter')
+
+const siteConfig = YAML.safeLoad(fs.readFileSync(`./config.yml`, 'utf8'))
 
 // === Simple-Markdown
 //
@@ -28,7 +34,7 @@ Handlebars.registerHelper('partial', function (value, options) {
 function applyHandlebars (template, context) {
   const compiled = Handlebars.compile(template)
 
-  return compiled(context)
+  return compiled({ ...context, site: siteConfig })
 }
 
 // === Generate Page
