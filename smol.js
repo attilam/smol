@@ -82,6 +82,14 @@ for (let key in siteConfig.routes) {
   walkSync(route.sourcePath).forEach(file => {
     if (route.skip !== undefined && route.skip.some(skip => file.includes(skip))) return
 
+    const filePath = path.dirname(file.replace(route.sourcePath, ''))
+    const outPath = path.join(siteConfig.destPath, route.destPath, filePath)
+
+    const outName = path.basename(file, '.md')
+    const targetFileName = `${outPath}/${outName}.html`
+
+    console.log(targetFileName)
+
     const content = fm(fs.readFileSync(file, 'utf8'))
 
     const context = {
@@ -93,13 +101,7 @@ for (let key in siteConfig.routes) {
 
     const result = renderPage(content.body, context)
 
-    const filePath = path.dirname(file.replace(route.sourcePath, ''))
-    const outPath = path.join(siteConfig.destPath, route.destPath, filePath)
     if (!fs.existsSync(outPath)) fs.mkdirSync(outPath)
-
-    const outName = path.basename(file, '.md')
-    const targetFileName = `${outPath}/${outName}.html`
-    console.log(targetFileName)
 
     fs.writeFileSync(`${targetFileName}`, result)
   })
