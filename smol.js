@@ -2,7 +2,7 @@
 //
 const fs = require('fs')
 
-// === YAML & front matter stuff
+// === YAML, front matter & config stuff
 //
 const YAML = require('js-yaml')
 const fm = require('front-matter')
@@ -27,6 +27,7 @@ Handlebars.registerHelper('inc', function (value, options) {
   return parseInt(value) + 1
 })
 
+// TODO: replace this with registerPartial
 Handlebars.registerHelper('partial', function (value, options) {
   return fs.readFileSync(`./layouts/partials/${value}`, 'utf8')
 })
