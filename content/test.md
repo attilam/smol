@@ -30,9 +30,13 @@ I have {{something}} that's _italics_, and **bold**.
 
 > A block quote to boot!
 
+@@@
+<ol>
 {{#each thingies }}
-{{inc @index}}. {{this}}
+<li>{{inc @index}}. {{this}}</li>
 {{/each}}
+</ol>
+@@@
 
 Something ordered perhaps:
 

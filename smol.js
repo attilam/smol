@@ -11,7 +11,7 @@ const siteConfig = YAML.safeLoad(fs.readFileSync(`./config.yml`, 'utf8'))
 
 // === Simple-Markdown
 //
-const SimpleMarkdown = require('./simple-markdown.min')
+const SimpleMarkdown = require('./simple-markdown')
 const mdParse = SimpleMarkdown.defaultBlockParse
 const mdOutput = SimpleMarkdown.defaultHtmlOutput
 
@@ -43,18 +43,18 @@ function applyHandlebars (template, context) {
 // load content & strip front matter
 const content = fm(fs.readFileSync('./content/test.md', 'utf8'))
 
-// apply Handlebars to content
-const contentTemplated = applyHandlebars(content.body, {...content.attributes})
-
 // convert markdown to html
-const htmlBody = markdownToHTML(contentTemplated)
+const htmlBody = markdownToHTML(content.body)
+
+// apply Handlebars to content
+const htmlHandlebared = applyHandlebars(htmlBody, {...content.attributes})
 
 // load layout
 const layoutName = content.attributes.layout || 'default'
 const layout = fs.readFileSync(`./layouts/${layoutName}.html`, 'utf8')
 
 // apply Handlebars to layout
-const layoutContext = { ...content.attributes, body: htmlBody }
+const layoutContext = { ...content.attributes, body: htmlHandlebared }
 const layoutTemplated = applyHandlebars(layout, layoutContext)
 
 // save page
