@@ -35,7 +35,7 @@ function markdownToHTML (source) {
 //
 const Handlebars = require('handlebars')
 
-walkSync('./layouts/partials').forEach( partial => {
+walkSync('./layouts/partials').forEach(partial => {
   const partialName = path.basename(partial, '.html')
 
   Handlebars.registerPartial(partialName, fs.readFileSync(partial, 'utf8'))
@@ -65,19 +65,39 @@ function renderPage (body, context) {
   return applyHandlebars(layout, layoutContext)
 }
 
+// via https://stackoverflow.com/questions/8980842/convert-slug-variable-to-title-text-with-javascript
+function titleize (slug) {
+  const words = slug.split('_')
+
+  return words.map(word => {
+    return word.charAt(0).toUpperCase() + word.substring(1).toLowerCase()
+  }).join(' ')
+}
+
+// === Generate Site
+//
 for (let key in siteConfig.routes) {
   const route = siteConfig.routes[key]
 
-  walkSync(route.path).forEach(file => {
+  walkSync(route.sourcePath).forEach(file => {
     if (route.skip !== undefined && route.skip.some(skip => file.includes(skip))) return
 
     console.log(file)
     const content = fm(fs.readFileSync(file, 'utf8'))
 
-    const context = { ...siteConfig, ...route, ...content.attributes }
+    const context = {
+      ...siteConfig,
+      ...route,
+      title: titleize(path.basename(file, '.md')),
+      ...content.attributes
+    }
+
     const result = renderPage(content.body, context)
 
+    const outPath = `${siteConfig.destPath}/${route.destPath}`
+    if (!fs.existsSync(outPath)) fs.mkdirSync(outPath)
+
     const outName = path.basename(file, '.md')
-    fs.writeFileSync(`public/${outName}.html`, result)
+    fs.writeFileSync(`${outPath}/${outName}.html`, result)
   })
 }

@@ -2,18 +2,20 @@ generator: smol
 baseUrl: https://attilam.com/
 title: "Attilam :: WORD :: "
 
+destPath: 'public/'
+
 # smol will gather all files from the paths below
 routes:
   'content':
-    path: 'content/'
-    dest: '/'
+    sourcePath: 'content/'
+    destPath: '/'
   'cheatsheets':
-    path: '../../../cheatsheets/'
+    sourcePath: '../../../cheatsheets/'
     skip:
       - '.git/'
       - 'README.md'
-    dest: 'cheatsheets/'
+    destPath: 'cheatsheets/'
     layout: 'cheatsheet'
-  # 'notes':
-  #   path: '~/Dropbox/Braindump/Notes'
-  #   dest: 'notes/'
+  'notes':
+    sourcePath: '/mnt/c/Users/attil/Dropbox/Braindump/Notes'
+    destPath: 'notes/'
