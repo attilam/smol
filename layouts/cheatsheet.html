@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Cheatsheet: {{title}}</title>
+{{{partial "style.html"}}}
+{{#if customCSS}}
+<style>
+{{{customCSS}}}
+</style>
+{{/if}}
+</head>
+<body>
+  <h1>Cheatsheet: {{title}}</h1>
+{{{body}}}
+</body>
+</html>
