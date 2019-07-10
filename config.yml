@@ -14,6 +14,6 @@ routes:
       - 'README.md'
     dest: 'cheatsheets/'
     layout: 'cheatsheet'
-  'notes':
-    path: '~/Dropbox/Braindump/Notes'
-    dest: 'notes/'
+  # 'notes':
+  #   path: '~/Dropbox/Braindump/Notes'
+  #   dest: 'notes/'

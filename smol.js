@@ -65,8 +65,19 @@ function renderPage (body, context) {
   return applyHandlebars(layout, layoutContext)
 }
 
-const content = fm(fs.readFileSync('./content/test.md', 'utf8'))
+for (let key in siteConfig.routes) {
+  const route = siteConfig.routes[key]
 
-const result = renderPage(content.body, { ...siteConfig, ...content.attributes })
+  walkSync(route.path).forEach(file => {
+    if (route.skip !== undefined && route.skip.some(skip => file.includes(skip))) return
 
-fs.writeFileSync('public/test.html', result)
+    console.log(file)
+    const content = fm(fs.readFileSync(file, 'utf8'))
+
+    const context = { ...siteConfig, ...route, ...content.attributes }
+    const result = renderPage(content.body, context)
+
+    const outName = path.basename(file, '.md')
+    fs.writeFileSync(`public/${outName}.html`, result)
+  })
+}
