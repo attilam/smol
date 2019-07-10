@@ -17,5 +17,5 @@ routes:
     destPath: 'cheatsheets/'
     layout: 'cheatsheet'
   'notes':
-    sourcePath: '/mnt/c/Users/attil/Dropbox/Braindump/Notes'
+    sourcePath: '/mnt/c/Users/attil/Dropbox/Braindump/Notes/'
     destPath: 'notes/'
