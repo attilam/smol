@@ -1,6 +1,18 @@
 // === smol.js -- 2019 @attilam
 //
 const fs = require('fs')
+const path = require('path')
+
+// via https://gist.github.com/kethinov/6658166
+const walkSync = (dir, filelist = []) => {
+  fs.readdirSync(dir).forEach(file => {
+    filelist = fs.statSync(path.join(dir, file)).isDirectory()
+      ? walkSync(path.join(dir, file), filelist)
+      : filelist.concat(path.join(dir, file))
+  })
+
+  return filelist
+}
 
 // === YAML, front matter & config stuff
 //
@@ -23,41 +35,38 @@ function markdownToHTML (source) {
 //
 const Handlebars = require('handlebars')
 
-Handlebars.registerHelper('inc', function (value, options) {
-  return parseInt(value) + 1
+walkSync('./layouts/partials').forEach( partial => {
+  const partialName = path.basename(partial, '.html')
+
+  Handlebars.registerPartial(partialName, fs.readFileSync(partial, 'utf8'))
+  console.log(`Partial: ${partialName}`)
 })
 
-// TODO: replace this with registerPartial
-Handlebars.registerHelper('partial', function (value, options) {
-  return fs.readFileSync(`./layouts/partials/${value}`, 'utf8')
+Handlebars.registerHelper('inc', function (value, options) {
+  return parseInt(value) + 1
 })
 
 function applyHandlebars (template, context) {
   const compiled = Handlebars.compile(template)
 
-  return compiled({ ...context, site: siteConfig })
+  return compiled(context)
 }
 
 // === Generate Page
 //
-// load content & strip front matter
+function renderPage (body, context) {
+  const html = applyHandlebars(markdownToHTML(body), context)
+
+  const layoutName = context.layout || 'default'
+  const layout = fs.readFileSync(`./layouts/${layoutName}.html`, 'utf8')
+
+  const layoutContext = { ...context, body: html }
+
+  return applyHandlebars(layout, layoutContext)
+}
+
 const content = fm(fs.readFileSync('./content/test.md', 'utf8'))
 
-// convert markdown to html
-const htmlBody = markdownToHTML(content.body)
+const result = renderPage(content.body, { ...siteConfig, ...content.attributes })
 
-// apply Handlebars to content
-const htmlHandlebared = applyHandlebars(htmlBody, {...content.attributes})
-
-// load layout
-const layoutName = content.attributes.layout || 'default'
-const layout = fs.readFileSync(`./layouts/${layoutName}.html`, 'utf8')
-
-// apply Handlebars to layout
-const layoutContext = { ...content.attributes, body: htmlHandlebared }
-const layoutTemplated = applyHandlebars(layout, layoutContext)
-
-// save page
-fs.writeFileSync('public/test.html', layoutTemplated)
-
-console.log(layoutTemplated)
+fs.writeFileSync('public/test.html', result)
