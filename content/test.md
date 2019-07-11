@@ -45,7 +45,7 @@ Something ordered perhaps:
 - other thing
 
 A [link](http://index.hu/)
-A ![pic](blah.gif)
+A ![pic](c4d.jpeg)
 
 Some inline html:
 
