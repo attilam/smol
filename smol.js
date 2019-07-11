@@ -59,10 +59,9 @@ function markdownToHTML (source) {
 const Handlebars = require('handlebars')
 
 walkSync('./layouts/partials').forEach(partial => {
-  const partialName = path.basename(partial, '.html')
+  const partialName = path.basename(partial, path.extname(partial))
 
   Handlebars.registerPartial(partialName, fs.readFileSync(partial, 'utf8'))
-  console.log(`Partial: ${partialName}`)
 })
 
 Handlebars.registerHelper('inc', function (value, options) {
@@ -101,7 +100,7 @@ const fileRules = [
   {
     match: fileName => /\.(md|markdown)$/.test(fileName),
     outExt: '.html',
-    createContext: file => {
+    processFile: file => {
       const res = fm(fs.readFileSync(file, 'utf8'))
       const context = { ...res.attributes, site: siteConfig, body: res.body }
 
@@ -114,7 +113,7 @@ const fileRules = [
   {
     match: fileName => /\.(htm|html)$/.test(fileName),
     outExt: '.html',
-    createContext: file => {
+    processFile: file => {
       const res = fm(fs.readFileSync(file, 'utf8'))
       const context = { ...res.attributes, site: siteConfig, body: res.body }
 
@@ -126,7 +125,7 @@ const fileRules = [
   },
   {
     match: fileName => true,
-    createContext: file => ({ site: siteConfig })
+    processFile: file => ({ site: siteConfig })
   }
 ]
 
@@ -158,7 +157,7 @@ for (let key in siteConfig.routes) {
       return
     }
 
-    const context = rule.createContext(file)
+    const context = rule.processFile(file)
 
     const outFilePath = path.join(siteConfig.destPath, route.destPath, filePath)
     const outFileBaseName = context.slug || fileBaseName
