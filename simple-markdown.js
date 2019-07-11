@@ -41,7 +41,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-var Prism = require('./prism');
+var hljs = require('highlight.js');
 
 // Open IIFE
 (function () {
@@ -664,16 +664,17 @@ var Prism = require('./prism');
       },
       html: function (node, output, state) {
         var className = node.lang
-          ? 'language-' + node.lang
+          ? 'hljs' // 'language-' + node.lang
           : undefined
 
         var highlighted = sanitizeText(node.content)
 
         if (node.lang !== undefined) {
-          var grammar = Prism.languages[node.lang]
-          if (node.lang === 'vex') grammar = Prism.languages.c // FIXME: ewww!
+          // var grammar = Prism.languages[node.lang]
+          // if (node.lang === 'vex') grammar = Prism.languages.c // FIXME: ewww!
 
-          highlighted = Prism.highlight(highlighted, grammar, node.lang)
+          // highlighted = Prism.highlight(highlighted, grammar, node.lang)
+          highlighted = hljs.highlightAuto(highlighted, [node.lang]).value
         }
 
         var codeBlock = htmlTag('code', highlighted, {
