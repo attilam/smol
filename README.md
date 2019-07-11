@@ -31,20 +31,21 @@ For example if a page has the `layout` specified in the YAML front-matter it wil
   - come up with a proper set of meta-data so the `<head>` can be created properly!
 
 - Generator
-  - should work with any extension! e.g. compile markdown, use HTML, just copy binary files
-  - `slug`: custom filename
-  - `is_draft`: skip file
+  - context creation should happen _before_ file processing, so early out can happen (e.g. for `is_draft`)
+  x should work with any extension! e.g. compile markdown, use HTML, just copy binary files
+  x `slug`: custom filename
+  x `is_draft`: skip file
   - `passThrough`: don't do any compilation with the file, just let it through
   - use semantic HTML throughout https://www.lifewire.com/why-use-semantic-html-3468271
 
 - Assets
-  - copy assets into place in `public` directory
+  x copy assets into place in `public` directory
   - compile SASS/SCSS maybe (if I'll need it)
-  - Assets could be just another route, but all content is pass-through!
+  x Assets could be just another route, but all content is pass-through!
 
 - Layouts and Partials
   - create proper layouts for front page, posts, articles, cheatsheets, Weekly Review, etc
-  - layouts and partials should be able to use whatever extension, if at all
+  x layouts and partials should be able to use whatever extension, if at all
 
 ## refs
 

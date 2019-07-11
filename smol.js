@@ -135,6 +135,7 @@ for (let key in siteConfig.routes) {
     }
 
     const context = rule.processFile(file, { ...route, site: siteConfig })
+    if (context.is_draft === true) return
 
     const outFilePath = path.join(siteConfig.destPath, route.destPath, filePath)
     const outFileBaseName = context.slug || fileBaseName

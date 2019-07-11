@@ -2,6 +2,7 @@
 title: My New Thing!
 created_at: 2019-07-09 10:43:47
 layout: post
+slug: tesuto
 thingies:
   - one
   - too
