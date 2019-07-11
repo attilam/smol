@@ -4,10 +4,10 @@ const fs = require('fs')
 const path = require('path')
 
 // via https://gist.github.com/kethinov/6658166
-const walkSync = (dir, filelist = []) => {
+const walkDirectoriesSync = (dir, filelist = []) => {
   fs.readdirSync(dir).forEach(file => {
     filelist = fs.statSync(path.join(dir, file)).isDirectory()
-      ? walkSync(path.join(dir, file), filelist)
+      ? walkDirectoriesSync(path.join(dir, file), filelist)
       : filelist.concat(path.join(dir, file))
   })
 
@@ -15,17 +15,17 @@ const walkSync = (dir, filelist = []) => {
 }
 
 // via https://geedew.com/remove-a-directory-that-is-not-empty-in-nodejs/
-function deleteFolderRecursive (path) {
-  if (fs.existsSync(path)) {
-    fs.readdirSync(path).forEach(function (file, index) {
-      var curPath = path + '/' + file
+function deleteDirectoryRecursive (directory) {
+  if (fs.existsSync(directory)) {
+    fs.readdirSync(directory).forEach(function (file, index) {
+      var curPath = directory + '/' + file
       if (fs.lstatSync(curPath).isDirectory()) { // recurse
-        deleteFolderRecursive(curPath)
+        deleteDirectoryRecursive(curPath)
       } else { // delete file
         fs.unlinkSync(curPath)
       }
     })
-    fs.rmdirSync(path)
+    fs.rmdirSync(directory)
   }
 }
 
@@ -36,7 +36,7 @@ function createDirectoryRecursive (directory) {
 // === YAML, front matter & config stuff
 //
 const YAML = require('js-yaml')
-const fm = require('front-matter')
+const frontMatter = require('front-matter')
 
 const siteConfig = {
   generator: 'smol',
@@ -58,7 +58,7 @@ function markdownToHTML (source) {
 //
 const Handlebars = require('handlebars')
 
-walkSync('./layouts/partials').forEach(partial => {
+walkDirectoriesSync('./layouts/partials').forEach(partial => {
   const partialName = path.basename(partial, path.extname(partial))
 
   Handlebars.registerPartial(partialName, fs.readFileSync(partial, 'utf8'))
@@ -77,21 +77,15 @@ Handlebars.registerHelper('titleize', (value, options) => {
   }).join(' ')
 })
 
-function applyHandlebars (template, context) {
-  const compiled = Handlebars.compile(template)
-
-  return compiled(context)
-}
+const applyHandlebars = (template, context) => Handlebars.compile(template)(context)
 
 // === Generate Page
 //
-function applyLayout (body, context) {
+function applyLayout (context) {
   const layoutName = context.layout || 'default'
   const layout = fs.readFileSync(`./layouts/${layoutName}.html`, 'utf8')
 
-  const layoutContext = { ...context, body }
-
-  return applyHandlebars(layout, layoutContext)
+  return applyHandlebars(layout, context)
 }
 
 // === Rules for different file types
@@ -101,12 +95,12 @@ const fileRules = [
     match: fileName => /\.(md|markdown)$/.test(fileName),
     outExt: '.html',
     processFile: file => {
-      const res = fm(fs.readFileSync(file, 'utf8'))
-      const context = { ...res.attributes, site: siteConfig, body: res.body }
+      const res = frontMatter(fs.readFileSync(file, 'utf8'))
+      const context = { ...res.attributes, site: siteConfig }
 
-      const html = applyHandlebars(markdownToHTML(context.body), context)
+      context.body = applyHandlebars(markdownToHTML(res.body), context)
 
-      context.body = applyLayout(html, context)
+      context.body = applyLayout(context)
       return context
     }
   },
@@ -114,16 +108,16 @@ const fileRules = [
     match: fileName => /\.(htm|html)$/.test(fileName),
     outExt: '.html',
     processFile: file => {
-      const res = fm(fs.readFileSync(file, 'utf8'))
-      const context = { ...res.attributes, site: siteConfig, body: res.body }
+      const res = frontMatter(fs.readFileSync(file, 'utf8'))
+      const context = { ...res.attributes, site: siteConfig }
 
-      const html = applyHandlebars(context.body, context)
+      context.body = applyHandlebars(res.body, context)
 
-      context.body = applyLayout(html, context)
+      context.body = applyLayout(context)
       return context
     }
   },
-  {
+  { // fallback rule: just copy file as-is
     match: fileName => true,
     processFile: file => ({ site: siteConfig })
   }
@@ -131,12 +125,12 @@ const fileRules = [
 
 // === Generate Site
 //
-deleteFolderRecursive(siteConfig.destPath)
+deleteDirectoryRecursive(siteConfig.destPath)
 
 for (let key in siteConfig.routes) {
   const route = siteConfig.routes[key]
 
-  walkSync(route.sourcePath).forEach(file => {
+  walkDirectoriesSync(route.sourcePath).forEach(file => {
     if (route.skip !== undefined && route.skip.some(skip => file.includes(skip))) return
 
     const filePath = path.dirname(file.replace(route.sourcePath, ''))
