@@ -126,11 +126,7 @@ const fileRules = [
   },
   {
     match: fileName => true,
-    createContext: file => {
-      const res = fs.readFileSync(file)
-      const context = { site: siteConfig, body: res }
-      return context
-    }
+    createContext: file => ({ site: siteConfig })
   }
 ]
 
@@ -173,6 +169,10 @@ for (let key in siteConfig.routes) {
 
     createDirectoryRecursive(outFilePath)
 
-    fs.writeFileSync(`${outFullPath}`, context.body)
+    if (context.body === undefined) {
+      fs.copyFileSync(file, outFullPath)
+    } else {
+      fs.writeFileSync(`${outFullPath}`, context.body)
+    }
   })
 }
