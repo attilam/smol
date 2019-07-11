@@ -1,4 +1,3 @@
-generator: smol
 baseUrl: https://attilam.com/
 title: "Attilam :: WORD :: "
 
@@ -9,13 +8,16 @@ routes:
   'content':
     sourcePath: 'content/'
     destPath: '/'
-  'cheatsheets':
-    sourcePath: '../../../cheatsheets/'
-    skip:
-      - '.git/'
-      - 'README.md'
-    destPath: 'cheatsheets/'
-    layout: 'cheatsheet'
-  'notes':
-    sourcePath: '/mnt/c/Users/attil/Dropbox/Braindump/Notes/'
-    destPath: 'notes/'
+  'assets':
+    sourcePath: 'assets/'
+    destPath: '/'
+  # 'cheatsheets':
+  #   sourcePath: '../../../cheatsheets/'
+  #   skip:
+  #     - '.git/'
+  #     - 'README.md'
+  #   destPath: 'cheatsheets/'
+  #   layout: 'cheatsheet'
+  # 'notes':
+  #   sourcePath: '/mnt/c/Users/attil/Dropbox/Braindump/Notes/'
+  #   destPath: 'notes/'

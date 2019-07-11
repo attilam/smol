@@ -14,12 +14,35 @@ const walkSync = (dir, filelist = []) => {
   return filelist
 }
 
+// via https://geedew.com/remove-a-directory-that-is-not-empty-in-nodejs/
+function deleteFolderRecursive (path) {
+  if (fs.existsSync(path)) {
+    fs.readdirSync(path).forEach(function (file, index) {
+      var curPath = path + '/' + file
+      if (fs.lstatSync(curPath).isDirectory()) { // recurse
+        deleteFolderRecursive(curPath)
+      } else { // delete file
+        fs.unlinkSync(curPath)
+      }
+    })
+    fs.rmdirSync(path)
+  }
+}
+
+function createDirectoryRecursive (directory) {
+  if (!fs.existsSync(directory)) fs.mkdirSync(directory, {recursive: true})
+}
+
 // === YAML, front matter & config stuff
 //
 const YAML = require('js-yaml')
 const fm = require('front-matter')
 
-const siteConfig = YAML.safeLoad(fs.readFileSync(`./config.yml`, 'utf8'))
+const siteConfig = {
+  generator: 'smol',
+  destPath: 'public/',
+  ...(YAML.safeLoad(fs.readFileSync(`./config.yml`, 'utf8')))
+}
 
 // === Simple-Markdown
 //
@@ -46,6 +69,15 @@ Handlebars.registerHelper('inc', function (value, options) {
   return parseInt(value) + 1
 })
 
+// via https://stackoverflow.com/questions/8980842/convert-slug-variable-to-title-text-with-javascript
+Handlebars.registerHelper('titleize', (value, options) => {
+  const words = value.split('_')
+
+  return words.map(word => {
+    return word.charAt(0).toUpperCase() + word.substring(1)
+  }).join(' ')
+})
+
 function applyHandlebars (template, context) {
   const compiled = Handlebars.compile(template)
 
@@ -54,28 +86,58 @@ function applyHandlebars (template, context) {
 
 // === Generate Page
 //
-function renderPage (body, context) {
-  const html = applyHandlebars(markdownToHTML(body), context)
-
+function applyLayout (body, context) {
   const layoutName = context.layout || 'default'
   const layout = fs.readFileSync(`./layouts/${layoutName}.html`, 'utf8')
 
-  const layoutContext = { ...context, body: html }
+  const layoutContext = { ...context, body }
 
   return applyHandlebars(layout, layoutContext)
 }
 
-// via https://stackoverflow.com/questions/8980842/convert-slug-variable-to-title-text-with-javascript
-function titleize (slug) {
-  const words = slug.split('_')
+// === Rules for different file types
+//
+const fileRules = [
+  {
+    match: fileName => /\.(md|markdown)$/.test(fileName),
+    outExt: '.html',
+    createContext: file => {
+      const res = fm(fs.readFileSync(file, 'utf8'))
+      const context = { ...res.attributes, site: siteConfig, body: res.body }
 
-  return words.map(word => {
-    return word.charAt(0).toUpperCase() + word.substring(1)
-  }).join(' ')
-}
+      const html = applyHandlebars(markdownToHTML(context.body), context)
+
+      context.body = applyLayout(html, context)
+      return context
+    }
+  },
+  {
+    match: fileName => /\.(htm|html)$/.test(fileName),
+    outExt: '.html',
+    createContext: file => {
+      const res = fm(fs.readFileSync(file, 'utf8'))
+      const context = { ...res.attributes, site: siteConfig, body: res.body }
+
+      const html = applyHandlebars(context.body, context)
+
+      context.body = applyLayout(html, context)
+      return context
+    }
+  },
+  {
+    match: fileName => true,
+    createContext: file => {
+      const res = fs.readFileSync(file)
+      const context = { site: siteConfig, body: res }
+      return context
+    }
+  }
+]
 
 // === Generate Site
 //
+deleteFolderRecursive(siteConfig.destPath)
+
 for (let key in siteConfig.routes) {
   const route = siteConfig.routes[key]
 
@@ -83,26 +145,34 @@ for (let key in siteConfig.routes) {
     if (route.skip !== undefined && route.skip.some(skip => file.includes(skip))) return
 
     const filePath = path.dirname(file.replace(route.sourcePath, ''))
-    const outPath = path.join(siteConfig.destPath, route.destPath, filePath)
+    const fileName = path.basename(file)
+    const fileExt = path.extname(file)
+    const fileBaseName = path.basename(fileName, fileExt)
 
-    const outName = path.basename(file, '.md')
-    const targetFileName = `${outPath}/${outName}.html`
-
-    console.log(targetFileName)
-
-    const content = fm(fs.readFileSync(file, 'utf8'))
-
-    const context = {
-      ...siteConfig,
-      ...route,
-      title: titleize(path.basename(file, '.md')),
-      ...content.attributes
+    let rule
+    for (const r of fileRules) {
+      if (r.match(file)) {
+        rule = r
+        break
+      }
     }
 
-    const result = renderPage(content.body, context)
+    if (rule === undefined) {
+      console.error(`Can't match any rule for ${file}`)
+      return
+    }
 
-    if (!fs.existsSync(outPath)) fs.mkdirSync(outPath)
+    const context = rule.createContext(file)
 
-    fs.writeFileSync(`${targetFileName}`, result)
+    const outFilePath = path.join(siteConfig.destPath, route.destPath, filePath)
+    const outFileBaseName = context.slug || fileBaseName
+    const outFileExt = rule.outExt || fileExt
+    const outFullPath = `${outFilePath}/${outFileBaseName}${outFileExt}`
+
+    console.log(outFullPath)
+
+    createDirectoryRecursive(outFilePath)
+
+    fs.writeFileSync(`${outFullPath}`, context.body)
   })
 }
