@@ -94,9 +94,9 @@ const fileRules = [
   {
     match: fileName => /\.(md|markdown)$/.test(fileName),
     outExt: '.html',
-    processFile: file => {
+    processFile: (file, context) => {
       const res = frontMatter(fs.readFileSync(file, 'utf8'))
-      const context = { ...res.attributes, site: siteConfig }
+      context = { ...context, ...res.attributes }
 
       context.body = applyHandlebars(markdownToHTML(res.body), context)
 
@@ -107,9 +107,9 @@ const fileRules = [
   {
     match: fileName => /\.(htm|html)$/.test(fileName),
     outExt: '.html',
-    processFile: file => {
+    processFile: (file, context) => {
       const res = frontMatter(fs.readFileSync(file, 'utf8'))
-      const context = { ...res.attributes, site: siteConfig }
+      context = { ...context, ...res.attributes }
 
       context.body = applyHandlebars(res.body, context)
 
@@ -119,7 +119,7 @@ const fileRules = [
   },
   { // fallback rule: just copy file as-is
     match: fileName => true,
-    processFile: file => ({ site: siteConfig })
+    processFile: (file, context) => (context)
   }
 ]
 
@@ -146,12 +146,8 @@ for (let key in siteConfig.routes) {
       }
     }
 
-    if (rule === undefined) {
-      console.error(`Can't match any rule for ${file}`)
-      return
-    }
-
-    const context = rule.processFile(file)
+    let context = { ...route, site: siteConfig }
+    context = rule.processFile(file, context)
 
     const outFilePath = path.join(siteConfig.destPath, route.destPath, filePath)
     const outFileBaseName = context.slug || fileBaseName

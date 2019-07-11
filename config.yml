@@ -11,13 +11,13 @@ routes:
   'assets':
     sourcePath: 'assets/'
     destPath: '/'
-  # 'cheatsheets':
-  #   sourcePath: '../../../cheatsheets/'
-  #   skip:
-  #     - '.git/'
-  #     - 'README.md'
-  #   destPath: 'cheatsheets/'
-  #   layout: 'cheatsheet'
-  # 'notes':
-  #   sourcePath: '/mnt/c/Users/attil/Dropbox/Braindump/Notes/'
-  #   destPath: 'notes/'
+  'cheatsheets':
+    sourcePath: '../../../cheatsheets/'
+    skip:
+      - '.git/'
+      - 'README.md'
+    destPath: 'cheatsheets/'
+    layout: 'cheatsheet'
+  'notes':
+    sourcePath: '/mnt/c/Users/attil/Dropbox/Braindump/Notes/'
+    destPath: 'notes/'
