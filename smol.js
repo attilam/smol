@@ -92,26 +92,14 @@ function applyLayout (context) {
 //
 const fileRules = [
   {
-    match: fileName => /\.(md|markdown)$/.test(fileName),
+    match: fileName => /\.(md|markdown|htm|html)$/.test(fileName),
     outExt: '.html',
     processFile: (file, context) => {
       const res = frontMatter(fs.readFileSync(file, 'utf8'))
       context = { ...context, ...res.attributes }
 
-      context.body = applyHandlebars(markdownToHTML(res.body), context)
-
-      context.body = applyLayout(context)
-      return context
-    }
-  },
-  {
-    match: fileName => /\.(htm|html)$/.test(fileName),
-    outExt: '.html',
-    processFile: (file, context) => {
-      const res = frontMatter(fs.readFileSync(file, 'utf8'))
-      context = { ...context, ...res.attributes }
-
-      context.body = applyHandlebars(res.body, context)
+      const html = /\.(htm|html)$/.test(file) ? res.body : markdownToHTML(res.body)
+      context.body = applyHandlebars(html, context)
 
       context.body = applyLayout(context)
       return context
@@ -146,8 +134,7 @@ for (let key in siteConfig.routes) {
       }
     }
 
-    let context = { ...route, site: siteConfig }
-    context = rule.processFile(file, context)
+    const context = rule.processFile(file, { ...route, site: siteConfig })
 
     const outFilePath = path.join(siteConfig.destPath, route.destPath, filePath)
     const outFileBaseName = context.slug || fileBaseName
