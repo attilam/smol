@@ -3,22 +3,25 @@
 
 A static site generator.
 
-This is my attempt for a staticgen to fit my needs. It's scruffy and dirty, but I can tinker with it in any way I like. And it's tiny, and doesn't have all the cruft of the generators I've come across.
+This is my attempt for a staticgen to fit my needs. It's an organic mess, because I use it as a playground to tinker with ideas, but it's also tiny.
 
 It uses
 
+- Simple-Markdown, but a bastardized version I hacked up (removed flow, react, added some obscure stuff)
 - YAML + front-matter, for configuration, and meta-data stuff
 - Handlebars, for inline page templating, and page layouts (e.g. per page theming)
 - highlight.js, for automatic syntax highlighting
 
-## Metadata
+## Assets & Metadata
 
-Each page inherits a set of meta-data that it can override from site-wide settings to the page itself. It's like this:
+Assets are compiled using `fileRules`. At the moment there are only rules for markdown/HTML files, the rest are just copied as-is.
+
+Each asset inherits a set of meta-data that it can override from site-wide settings to the asset itself. It's like this:
 
 - site wide config (config.yml)
 - route-specific settings
 - generated parameters (e.g. file name, title)
-- the page's own front-matter
+- the asset's own front-matter, if it has any
 
 For example if a page has the `layout` specified in the YAML front-matter it will use that. If not then it can fall back to the one specified by the route, and if that doesn't have one specified it will resort to the site configuration's default.
 
@@ -31,12 +34,17 @@ For example if a page has the `layout` specified in the YAML front-matter it wil
   - come up with a proper set of meta-data so the `<head>` can be created properly!
 
 - Generator
-  - context creation should happen _before_ file processing, so early out can happen (e.g. for `is_draft`)
+  - context creation should happen _before_ file processing, so early-out can happen (e.g. for `is_draft`)
+  - taxonomy support, for list page generation
+    - preload content from all routes possibly needed
+    - "text files" would have to be marked as such, and scanned for front matter in a prepass
   x should work with any extension! e.g. compile markdown, use HTML, just copy binary files
   x `slug`: custom filename
   x `is_draft`: skip file
   - `passThrough`: don't do any compilation with the file, just let it through
   - use semantic HTML throughout https://www.lifewire.com/why-use-semantic-html-3468271
+  - RSS/Atom support
+  - move syntax highlighting out of Simple-Markdown
 
 - Assets
   x copy assets into place in `public` directory
