@@ -7,10 +7,10 @@ This is my attempt for a staticgen to fit my needs. It's an organic mess, becaus
 
 It uses
 
-- Simple-Markdown, but a bastardized version I hacked up (removed flow, react, added some obscure stuff)
-- YAML + front-matter, for configuration, and meta-data stuff
-- Handlebars, for inline page templating, and page layouts (e.g. per page theming)
-- highlight.js, for automatic syntax highlighting
+- [Simple-Markdown](https://github.com/Khan/simple-markdown), but a bastardized version I hacked up (removed flow, react, added some obscure stuff)
+- [YAML](https://github.com/nodeca/js-yaml) + [front-matter](https://github.com/jxson/front-matter), for configuration, and meta-data stuff
+- [Handlebars](http://handlebarsjs.com/), for inline page templating, and page layouts (e.g. per page theming)
+- [highlight.js](https://highlightjs.org/), for automatic syntax highlighting
 
 ## Assets & Metadata
 
@@ -38,22 +38,22 @@ For example if a page has the `layout` specified in the YAML front-matter it wil
   - taxonomy support, for list page generation
     - preload content from all routes possibly needed
     - "text files" would have to be marked as such, and scanned for front matter in a prepass
-  x should work with any extension! e.g. compile markdown, use HTML, just copy binary files
-  x `slug`: custom filename
-  x `is_draft`: skip file
+  - should work with any extension! e.g. compile markdown, use HTML, just copy binary files
+  - DONE ~~`slug`: custom filename~~
+  - DONE ~~`is_draft`: skip file~~
   - `passThrough`: don't do any compilation with the file, just let it through
   - use semantic HTML throughout https://www.lifewire.com/why-use-semantic-html-3468271
   - RSS/Atom support
   - move syntax highlighting out of Simple-Markdown
 
 - Assets
-  x copy assets into place in `public` directory
+  - DONE ~~copy assets into place in `public` directory~~
   - compile SASS/SCSS maybe (if I'll need it)
-  x Assets could be just another route, but all content is pass-through!
+  - DONE ~~Assets could be just another route, but all content is pass-through!~~
 
 - Layouts and Partials
   - create proper layouts for front page, posts, articles, cheatsheets, Weekly Review, etc
-  x layouts and partials should be able to use whatever extension, if at all
+  - DONE ~~layouts and partials should be able to use whatever extension, if at all~~
 
 ## refs
 
