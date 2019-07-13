@@ -60,12 +60,14 @@ function markdownToHTML (source) {
 //
 const Handlebars = require('handlebars')
 
-Handlebars.registerHelper('inc', function (value, options) {
+Handlebars.registerHelper('inc', function (value) {
   return parseInt(value) + 1
 })
 
+const applyHandlebars = (template, context) => Handlebars.compile(template)(context)
+
 // via https://stackoverflow.com/questions/8980842/convert-slug-variable-to-title-text-with-javascript
-Handlebars.registerHelper('titleize', (value, options) => {
+Handlebars.registerHelper('titleize', (value) => {
   const words = value.split('_')
 
   return words.map(word => {
@@ -73,7 +75,18 @@ Handlebars.registerHelper('titleize', (value, options) => {
   }).join(' ')
 })
 
-const applyHandlebars = (template, context) => Handlebars.compile(template)(context)
+Handlebars.registerHelper('assets', (context) => {
+  const a = context.data.root.site.assets.filter(asset => asset.routeName === context.hash['route'])
+
+  let result = '<ul>\n'
+  for (let i = 0; i < a.length; i++) {
+    context.data.index = i
+    result += `<li>${context.fn(a[i])}</li>\n`
+  }
+  result += '</ul>\n'
+
+  return result
+})
 
 // === Theme support
 //
@@ -135,10 +148,10 @@ const fileRules = [
 deleteDirectoryRecursive(config.destPath)
 
 // first gather all assets, create metadata/context
-for (let key in config.routes) {
-  const route = config.routes[key]
+for (let routeName in config.routes) {
+  const route = config.routes[routeName]
 
-  console.log(`route: ${key}`)
+  console.log(`route: ${routeName}`)
 
   walkDirectoriesSync(route.sourcePath).forEach(fileFullPath => {
     if (route.skip !== undefined && route.skip.find(skip => fileFullPath.includes(skip))) return
@@ -148,7 +161,7 @@ for (let key in config.routes) {
     const fileExt = path.extname(fileFullPath)
     const fileBaseName = path.basename(fileName, fileExt)
 
-    let asset = { ...route, site: config, filePath, fileName, fileExt, fileBaseName, fileFullPath }
+    let asset = { ...route, routeName, site: { ...config, assets }, filePath, fileName, fileExt, fileBaseName, fileFullPath }
 
     if (config.textFiles.find(tf => tf === fileExt)) {
       const res = frontMatter(fs.readFileSync(fileFullPath, 'utf8'))
@@ -163,9 +176,13 @@ for (let key in config.routes) {
     const outFilePath = path.join(config.destPath, route.destPath, filePath)
     const outFileBaseName = asset.slug || fileBaseName
     const outFileExt = asset.pass_through ? fileExt : (rule.outExt || fileExt)
+    const outFileName = `${outFileBaseName}${outFileExt}`
     const outFullPath = `${outFilePath}/${outFileBaseName}${outFileExt}`
 
-    asset = { ...asset, rule, outFilePath, outFileBaseName, outFileExt, outFullPath }
+    const sitelink = path.join(route.destPath, filePath, outFileName)
+    const permalink = path.join(config.baseUrl, sitelink)
+
+    asset = { ...asset, rule, outFilePath, outFileBaseName, outFileExt, outFileName, outFullPath, sitelink, permalink }
     assets.push(asset)
   })
 }
