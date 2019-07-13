@@ -41,7 +41,7 @@ For example if a page has the `layout` specified in the YAML front-matter it wil
   - DONE ~~should work with any extension! e.g. compile markdown, use HTML, just copy binary files~~
   - DONE ~~`slug`: custom filename~~
   - DONE ~~`is_draft`: skip file~~
-  - DONE ~~`passThrough`: don't do any compilation with the file, just let it through~~
+  - DONE ~~`pass_through`: don't do any compilation with the file, just let it through~~
   - use semantic HTML throughout https://www.lifewire.com/why-use-semantic-html-3468271
   - RSS/Atom support
   - move syntax highlighting out of Simple-Markdown
@@ -52,8 +52,9 @@ For example if a page has the `layout` specified in the YAML front-matter it wil
   - DONE ~~Assets could be just another route, but all content is pass-through!~~
 
 - Layouts and Partials
+  - DONE ~~add theme support~~
   - create proper layouts for front page, posts, articles, cheatsheets, Weekly Review, etc
-  - DONE ~~layouts and partials should be able to use whatever extension, if at all~~
+  - layouts and partials should be able to use whatever extension, if at all
 
 ## refs
 

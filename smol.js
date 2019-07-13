@@ -42,7 +42,7 @@ const config = {
   generator: 'smol',
   destPath: 'public/',
   textFiles: ['.md', '.markdown', '.html', '.htm', '.txt', '.css'],
-  layouts: 'basic',
+  theme: 'basic',
   ...(YAML.safeLoad(fs.readFileSync(`./config.yml`, 'utf8')))
 }
 
@@ -77,7 +77,7 @@ const applyHandlebars = (template, context) => Handlebars.compile(template)(cont
 
 // === Theme support
 //
-const themeDirectory = `./themes/${config.layouts}`
+const themeDirectory = `./themes/${config.theme}`
 
 walkDirectoriesSync(`${themeDirectory}/partials`).forEach(partial => {
   const partialName = path.basename(partial, path.extname(partial))
