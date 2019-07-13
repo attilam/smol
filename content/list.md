@@ -28,3 +28,5 @@ This is {{fileFullPath}}.
 {{#assets filterBy="tags=fancy" sortBy="title"}}{{inc @index}}. <a href="{{sitelink}}">{{title}}</a>
 {{/assets}}
 @@@
+
+Here's some `{{{{raw-block}}}}{{handlebars}}{{{{/raw-block}}}}`.

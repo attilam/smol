@@ -66,6 +66,8 @@ Handlebars.registerHelper('inc', function (value) {
 
 const applyHandlebars = (template, context) => Handlebars.compile(template)(context)
 
+Handlebars.registerHelper('raw-block', options => options.fn())
+
 // via https://stackoverflow.com/questions/8980842/convert-slug-variable-to-title-text-with-javascript
 Handlebars.registerHelper('titleize', (value) => {
   const words = value.split('_')
