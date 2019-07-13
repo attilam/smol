@@ -76,14 +76,44 @@ Handlebars.registerHelper('titleize', (value) => {
 })
 
 Handlebars.registerHelper('assets', (context) => {
-  const a = context.data.root.site.assets.filter(asset => asset.routeName === context.hash['route'])
+  let items
 
-  let result = '<ul>\n'
-  for (let i = 0; i < a.length; i++) {
-    context.data.index = i
-    result += `<li>${context.fn(a[i])}</li>\n`
+  let filterBy = context.hash['filterBy']
+  if (filterBy) {
+    let parts = filterBy.split('=')
+    let key = parts[0].trim()
+    let value = parts[1].trim()
+
+    items = context.data.root.site.assets.filter(item => {
+      if (Array.isArray(item[key])) {
+        return item[key].find(it => it === value)
+      } else {
+        return (item[key] === value)
+      }
+    })
+  } else {
+    items = [...context.data.root.site.assets]
   }
-  result += '</ul>\n'
+
+  const sortBy = context.hash['sortBy']
+  if (sortBy) {
+    let parts = sortBy.split(',')
+    let sort = parts[0]
+    let inc = true
+    if (parts.length === 2) inc = parts[1] === 'inc'
+
+    items = items.sort((a, b) => {
+      if (a[sort] < b[sort]) return inc ? -1 : 1
+      if (a[sort] > b[sort]) return inc ? 1 : -1
+      return 0
+    })
+  }
+
+  let result = ''
+  for (let i = 0; i < items.length; i++) {
+    context.data.index = i
+    result += context.fn(items[i])
+  }
 
   return result
 })
@@ -181,6 +211,8 @@ for (let routeName in config.routes) {
 
     const sitelink = path.join(route.destPath, filePath, outFileName)
     const permalink = path.join(config.baseUrl, sitelink)
+
+    asset.title = asset.title || outFileName
 
     asset = { ...asset, rule, outFilePath, outFileBaseName, outFileExt, outFileName, outFullPath, sitelink, permalink }
     assets.push(asset)

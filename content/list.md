@@ -8,7 +8,23 @@ layout: default
 
 This is {{fileFullPath}}.
 
+## Content
+
 @@@
-{{#assets route="content"}}{{inc @index}}. <a href="{{sitelink}}">{{title}}</a>
+{{#assets filterBy="routeName=content" sortBy="title,inc"}}{{inc @index}}. <a href="{{sitelink}}">{{title}}</a>
+{{/assets}}
+@@@
+
+## all assets
+
+@@@
+{{#each site.assets}}{{inc @index}}. {{title}}
+{{/each}}
+@@@
+
+## by tags
+
+@@@
+{{#assets filterBy="tags=fancy" sortBy="title"}}{{inc @index}}. <a href="{{sitelink}}">{{title}}</a>
 {{/assets}}
 @@@

@@ -13,6 +13,7 @@ customCSS: |-
     color: #292a2c;
     background: #F0F0F0;
   }
+tags: [fancy]
 ---
 
 World! What's up I have a keyboard shortcut for you: `Y`. You like it?
