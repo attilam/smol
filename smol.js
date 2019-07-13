@@ -42,6 +42,7 @@ const config = {
   generator: 'smol',
   destPath: 'public/',
   textFiles: ['.md', '.markdown', '.html', '.htm', '.txt', '.css'],
+  layouts: 'basic',
   ...(YAML.safeLoad(fs.readFileSync(`./config.yml`, 'utf8')))
 }
 
@@ -59,7 +60,7 @@ function markdownToHTML (source) {
 //
 const Handlebars = require('handlebars')
 
-walkDirectoriesSync('./layouts/partials').forEach(partial => {
+walkDirectoriesSync(`./themes/${config.layouts}/partials`).forEach(partial => {
   const partialName = path.basename(partial, path.extname(partial))
 
   Handlebars.registerPartial(partialName, fs.readFileSync(partial, 'utf8'))
@@ -83,7 +84,7 @@ const applyHandlebars = (template, context) => Handlebars.compile(template)(cont
 // === Generate Page
 //
 function applyLayout (context) {
-  const layoutName = `./layouts/${context.layout || config.layout || 'default'}.html`
+  const layoutName = `./themes/${config.layouts}/${context.layout || config.layout || 'default'}.html`
 
   if (fs.existsSync(layoutName)) {
     const layout = fs.readFileSync(layoutName, 'utf8')
@@ -168,7 +169,7 @@ assets.forEach(asset => {
 
   createDirectoryRecursive(asset.outFilePath)
 
-  if (asset.body === undefined) {
+  if (asset.body === undefined) { // if no processed body, just copy original file
     fs.copyFileSync(asset.fileFullPath, asset.outFullPath)
   } else {
     fs.writeFileSync(`${asset.outFullPath}`, asset.body)
