@@ -35,13 +35,16 @@ For example if a page has the `layout` specified in the YAML front-matter it wil
 
 - Generator
   - DONE ~~context creation should happen _before_ file processing, so early-out can happen (e.g. for `is_draft`)~~
-  - taxonomy support, for list page generation
-    - ~~preload content from all routes possibly needed~~
+  - list pages, taxonomy support
+    - DONE ~~preload content from all routes possibly needed~~
     - DONE ~~"text files" would have to be marked as such, and scanned for front matter in a prepass~~
+    - site config could contain a list of index pages, with layout, sortBy, filterBy, etc
   - DONE ~~should work with any extension! e.g. compile markdown, use HTML, just copy binary files~~
   - DONE ~~`slug`: custom filename~~
   - DONE ~~`is_draft`: skip file~~
   - DONE ~~`pass_through`: don't do any compilation with the file, just let it through~~
+  - add date handling for pages, via front matter/file info, create Handlebars helper(s)
+  - `needsLayout` is wrong, maybe use e.g. `layout: NULL` instead, asset should overrule fileRule!
   - use semantic HTML throughout https://www.lifewire.com/why-use-semantic-html-3468271
   - RSS/Atom support
   - move syntax highlighting out of Simple-Markdown
@@ -54,7 +57,7 @@ For example if a page has the `layout` specified in the YAML front-matter it wil
 - Layouts and Partials
   - DONE ~~add theme support~~
   - create proper layouts for front page, posts, articles, cheatsheets, Weekly Review, etc
-  - layouts and partials should be able to use whatever extension, if at all
+  - layouts should be able to use whatever extension, if at all
 
 ## refs
 
