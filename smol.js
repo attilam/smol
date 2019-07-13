@@ -80,13 +80,17 @@ Handlebars.registerHelper('titleize', (value) => {
 Handlebars.registerHelper('assets', (context) => {
   let items
 
+  // first filter the assets
   let filterBy = context.hash['filterBy']
   if (filterBy) {
     let parts = filterBy.split('=')
     let key = parts[0].trim()
-    let value = parts[1].trim()
+    let value
+    if (parts.length === 2) value = parts[1].trim()
 
     items = context.data.root.site.assets.filter(item => {
+      if (value === undefined) return item[key] !== undefined
+
       if (Array.isArray(item[key])) {
         return item[key].find(it => it === value)
       } else {
@@ -97,16 +101,17 @@ Handlebars.registerHelper('assets', (context) => {
     items = [...context.data.root.site.assets]
   }
 
+  // ...then sort them
   const sortBy = context.hash['sortBy']
   if (sortBy) {
     let parts = sortBy.split(',')
-    let sort = parts[0]
+    let key = parts[0].trim()
     let inc = true
-    if (parts.length === 2) inc = parts[1] === 'inc'
+    if (parts.length === 2) inc = parts[1].trim() === 'inc'
 
     items = items.sort((a, b) => {
-      if (a[sort] < b[sort]) return inc ? -1 : 1
-      if (a[sort] > b[sort]) return inc ? 1 : -1
+      if (a[key] < b[key]) return inc ? -1 : 1
+      if (a[key] > b[key]) return inc ? 1 : -1
       return 0
     })
   }

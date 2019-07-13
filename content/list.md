@@ -11,7 +11,7 @@ This is {{fileFullPath}}.
 ## Content
 
 @@@
-{{#assets filterBy="routeName=content" sortBy="title,inc"}}{{inc @index}}. <a href="{{sitelink}}">{{title}}</a>
+{{#assets filterBy="routeName=content" sortBy="title,dec"}}{{inc @index}}. <a href="{{sitelink}}">{{title}}</a>
 {{/assets}}
 @@@
 
@@ -26,6 +26,13 @@ This is {{fileFullPath}}.
 
 @@@
 {{#assets filterBy="tags=fancy" sortBy="title"}}{{inc @index}}. <a href="{{sitelink}}">{{title}}</a>
+{{/assets}}
+@@@
+
+## has 'something'
+
+@@@
+{{#assets filterBy="something"}}{{inc @index}}. <a href="{{permalink}}">{{title}}</a>
 {{/assets}}
 @@@
 
