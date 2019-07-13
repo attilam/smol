@@ -38,9 +38,10 @@ function createDirectoryRecursive (directory) {
 const YAML = require('js-yaml')
 const frontMatter = require('front-matter')
 
-const siteConfig = {
+const config = {
   generator: 'smol',
   destPath: 'public/',
+  textFiles: ['.md', '.markdown', '.html', '.htm', '.txt', '.css'],
   ...(YAML.safeLoad(fs.readFileSync(`./config.yml`, 'utf8')))
 }
 
@@ -82,41 +83,51 @@ const applyHandlebars = (template, context) => Handlebars.compile(template)(cont
 // === Generate Page
 //
 function applyLayout (context) {
-  const layoutName = context.layout || 'default'
-  const layout = fs.readFileSync(`./layouts/${layoutName}.html`, 'utf8')
+  const layoutName = `./layouts/${context.layout || 'default'}.html`
 
-  return applyHandlebars(layout, context)
+  if (fs.existsSync(layoutName)) {
+    const layout = fs.readFileSync(layoutName, 'utf8')
+    context.body = applyHandlebars(layout, context)
+  }
+
+  return context
 }
 
-// === Rules for different file types
+// === Files and filters
 //
+const assets = []
+
 const fileRules = [
   {
-    match: fileName => /\.(md|markdown|htm|html)$/.test(fileName),
+    match: fileName => /\.(md|markdown)$/.test(fileName),
     outExt: '.html',
-    processFile: (file, context) => {
-      const res = frontMatter(fs.readFileSync(file, 'utf8'))
-      context = { ...context, ...res.attributes }
-
-      const html = /\.(htm|html)$/.test(file) ? res.body : markdownToHTML(res.body)
-      context.body = applyHandlebars(html, context)
-
-      context.body = applyLayout(context)
+    needsLayout: true,
+    processFile: (context) => {
+      context.body = applyHandlebars(markdownToHTML(context.body), context)
+      return context
+    }
+  },
+  {
+    match: fileName => /\.(htm|html)$/.test(fileName),
+    outExt: '.html',
+    needsLayout: true,
+    processFile: (context) => {
+      context.body = applyHandlebars(context.body, context)
       return context
     }
   },
   { // fallback rule: just copy file as-is
     match: fileName => true,
-    processFile: (file, context) => (context)
+    processFile: (context) => (context)
   }
 ]
 
 // === Generate Site
 //
-deleteDirectoryRecursive(siteConfig.destPath)
+deleteDirectoryRecursive(config.destPath)
 
-for (let key in siteConfig.routes) {
-  const route = siteConfig.routes[key]
+for (let key in config.routes) {
+  const route = config.routes[key]
 
   walkDirectoriesSync(route.sourcePath).forEach(file => {
     if (route.skip !== undefined && route.skip.some(skip => file.includes(skip))) return
@@ -126,30 +137,50 @@ for (let key in siteConfig.routes) {
     const fileExt = path.extname(file)
     const fileBaseName = path.basename(fileName, fileExt)
 
+    let asset = { filePath, fileName, fileExt, fileBaseName }
+    asset = { ...route, site: config, ...asset }
+
+    if (config.textFiles.some(fext => fileExt === fext)) {
+      const res = frontMatter(fs.readFileSync(file, 'utf8'))
+
+      asset = { ...asset, ...res.attributes, body: res.body, textFile: true }
+    }
+
+    if (asset.is_draft === true) return
+
     let rule
-    for (const r of fileRules) {
-      if (r.match(file)) {
-        rule = r
+    for (const f of fileRules) {
+      if (f.match(file)) {
+        rule = f
         break
       }
     }
 
-    const context = rule.processFile(file, { ...route, site: siteConfig })
-    if (context.is_draft === true) return
+    asset = rule.processFile(asset)
 
-    const outFilePath = path.join(siteConfig.destPath, route.destPath, filePath)
-    const outFileBaseName = context.slug || fileBaseName
+    if (rule.needsLayout || asset.needsLayout) {
+      asset = applyLayout(asset)
+    }
+
+    const outFilePath = path.join(config.destPath, route.destPath, filePath)
+    const outFileBaseName = asset.slug || fileBaseName
     const outFileExt = rule.outExt || fileExt
     const outFullPath = `${outFilePath}/${outFileBaseName}${outFileExt}`
+
+    asset = { ...asset, outFilePath, outFileBaseName, outFileExt, outFullPath }
+    assets.push(asset)
 
     console.log(outFullPath)
 
     createDirectoryRecursive(outFilePath)
 
-    if (context.body === undefined) {
+    if (asset.body === undefined) {
       fs.copyFileSync(file, outFullPath)
     } else {
-      fs.writeFileSync(`${outFullPath}`, context.body)
+      fs.writeFileSync(`${outFullPath}`, asset.body)
     }
   })
 }
+
+console.log(assets.length)
+console.log(assets[2])

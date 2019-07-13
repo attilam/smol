@@ -1,5 +1,7 @@
 baseUrl: https://attilam.com/
 title: "Attilam :: WORD :: "
+description: "@attilam's Homepage"
+author: "@attilam"
 
 destPath: 'public/'
 
