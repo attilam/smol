@@ -60,12 +60,6 @@ function markdownToHTML (source) {
 //
 const Handlebars = require('handlebars')
 
-walkDirectoriesSync(`./themes/${config.layouts}/partials`).forEach(partial => {
-  const partialName = path.basename(partial, path.extname(partial))
-
-  Handlebars.registerPartial(partialName, fs.readFileSync(partial, 'utf8'))
-})
-
 Handlebars.registerHelper('inc', function (value, options) {
   return parseInt(value) + 1
 })
@@ -81,10 +75,18 @@ Handlebars.registerHelper('titleize', (value, options) => {
 
 const applyHandlebars = (template, context) => Handlebars.compile(template)(context)
 
-// === Generate Page
+// === Theme support
 //
+const themeDirectory = `./themes/${config.layouts}`
+
+walkDirectoriesSync(`${themeDirectory}/partials`).forEach(partial => {
+  const partialName = path.basename(partial, path.extname(partial))
+
+  Handlebars.registerPartial(partialName, fs.readFileSync(partial, 'utf8'))
+})
+
 function applyLayout (context) {
-  const layoutName = `./themes/${config.layouts}/${context.layout || config.layout || 'default'}.html`
+  const layoutName = `${themeDirectory}/${context.layout || config.layout || 'default'}.html`
 
   if (fs.existsSync(layoutName)) {
     const layout = fs.readFileSync(layoutName, 'utf8')
