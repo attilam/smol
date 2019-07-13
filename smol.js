@@ -95,6 +95,8 @@ function applyLayout (context) {
 
 // === Files and filters
 //
+const assets = []
+
 const fileRules = [
   {
     match: fileName => /\.(md|markdown)$/.test(fileName),
@@ -119,51 +121,56 @@ const fileRules = [
 //
 deleteDirectoryRecursive(config.destPath)
 
+// first gather all assets, create metadata/context
 for (let key in config.routes) {
   const route = config.routes[key]
 
-  walkDirectoriesSync(route.sourcePath).forEach(file => {
-    if (route.skip !== undefined && route.skip.find(skip => file.includes(skip))) return
+  walkDirectoriesSync(route.sourcePath).forEach(fileFullPath => {
+    if (route.skip !== undefined && route.skip.find(skip => fileFullPath.includes(skip))) return
 
-    const filePath = path.dirname(file.replace(route.sourcePath, ''))
-    const fileName = path.basename(file)
-    const fileExt = path.extname(file)
+    const filePath = path.dirname(fileFullPath.replace(route.sourcePath, ''))
+    const fileName = path.basename(fileFullPath)
+    const fileExt = path.extname(fileFullPath)
     const fileBaseName = path.basename(fileName, fileExt)
 
-    let asset = { ...route, site: config, filePath, fileName, fileExt, fileBaseName }
+    let asset = { ...route, site: config, filePath, fileName, fileExt, fileBaseName, fileFullPath }
 
     if (config.textFiles.find(tf => tf === fileExt)) {
-      const res = frontMatter(fs.readFileSync(file, 'utf8'))
+      const res = frontMatter(fs.readFileSync(fileFullPath, 'utf8'))
 
       asset = { ...asset, ...res.attributes, body: res.body, textFile: true }
     }
 
     if (asset.is_draft) return
 
-    let rule = fileRules.find(r => r.match(file))
+    let rule = fileRules.find(r => r.match(fileFullPath))
 
     const outFilePath = path.join(config.destPath, route.destPath, filePath)
     const outFileBaseName = asset.slug || fileBaseName
     const outFileExt = asset.pass_through ? fileExt : (rule.outExt || fileExt)
     const outFullPath = `${outFilePath}/${outFileBaseName}${outFileExt}`
 
-    console.log(outFullPath)
-
-    asset = { ...asset, outFilePath, outFileBaseName, outFileExt, outFullPath }
-
-    if (!asset.pass_through) {
-      if (rule.processFile !== undefined) asset = rule.processFile(asset)
-
-      if (asset.textFile) asset.body = applyHandlebars(asset.body, asset)
-      if (rule.needsLayout || asset.needsLayout) asset = applyLayout(asset)
-    }
-
-    createDirectoryRecursive(outFilePath)
-
-    if (asset.body === undefined) {
-      fs.copyFileSync(file, outFullPath)
-    } else {
-      fs.writeFileSync(`${outFullPath}`, asset.body)
-    }
+    asset = { ...asset, rule, outFilePath, outFileBaseName, outFileExt, outFullPath }
+    assets.push(asset)
   })
 }
+
+// then process all files, and write them to destPath
+assets.forEach(asset => {
+  console.log(asset.outFullPath)
+
+  if (!asset.pass_through) {
+    if (asset.rule.processFile !== undefined) asset = asset.rule.processFile(asset)
+
+    if (asset.textFile) asset.body = applyHandlebars(asset.body, asset)
+    if (asset.rule.needsLayout || asset.needsLayout) asset = applyLayout(asset)
+  }
+
+  createDirectoryRecursive(asset.outFilePath)
+
+  if (asset.body === undefined) {
+    fs.copyFileSync(asset.fileFullPath, asset.outFullPath)
+  } else {
+    fs.writeFileSync(`${asset.outFullPath}`, asset.body)
+  }
+})
