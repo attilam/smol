@@ -34,14 +34,14 @@ For example if a page has the `layout` specified in the YAML front-matter it wil
   - come up with a proper set of meta-data so the `<head>` can be created properly!
 
 - Generator
-  - context creation should happen _before_ file processing, so early-out can happen (e.g. for `is_draft`)
+  - DONE ~~context creation should happen _before_ file processing, so early-out can happen (e.g. for `is_draft`)~~
   - taxonomy support, for list page generation
-    - preload content from all routes possibly needed
-    - "text files" would have to be marked as such, and scanned for front matter in a prepass
-  - should work with any extension! e.g. compile markdown, use HTML, just copy binary files
+    - ~~preload content from all routes possibly needed~~
+    - DONE ~~"text files" would have to be marked as such, and scanned for front matter in a prepass~~
+  - DONE ~~should work with any extension! e.g. compile markdown, use HTML, just copy binary files~~
   - DONE ~~`slug`: custom filename~~
   - DONE ~~`is_draft`: skip file~~
-  - `passThrough`: don't do any compilation with the file, just let it through
+  - DONE ~~`passThrough`: don't do any compilation with the file, just let it through~~
   - use semantic HTML throughout https://www.lifewire.com/why-use-semantic-html-3468271
   - RSS/Atom support
   - move syntax highlighting out of Simple-Markdown

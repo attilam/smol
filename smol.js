@@ -83,7 +83,7 @@ const applyHandlebars = (template, context) => Handlebars.compile(template)(cont
 // === Generate Page
 //
 function applyLayout (context) {
-  const layoutName = `./layouts/${context.layout || 'default'}.html`
+  const layoutName = `./layouts/${context.layout || config.layout || 'default'}.html`
 
   if (fs.existsSync(layoutName)) {
     const layout = fs.readFileSync(layoutName, 'utf8')
@@ -130,10 +130,9 @@ for (let key in config.routes) {
     const fileExt = path.extname(file)
     const fileBaseName = path.basename(fileName, fileExt)
 
-    let asset = { filePath, fileName, fileExt, fileBaseName }
-    asset = { ...route, site: config, ...asset }
+    let asset = { ...route, site: config, filePath, fileName, fileExt, fileBaseName }
 
-    if (config.textFiles.includes(fileExt)) {
+    if (config.textFiles.find(tf => tf === fileExt)) {
       const res = frontMatter(fs.readFileSync(file, 'utf8'))
 
       asset = { ...asset, ...res.attributes, body: res.body, textFile: true }
@@ -145,17 +144,19 @@ for (let key in config.routes) {
 
     const outFilePath = path.join(config.destPath, route.destPath, filePath)
     const outFileBaseName = asset.slug || fileBaseName
-    const outFileExt = rule.outExt || fileExt
+    const outFileExt = asset.pass_through ? fileExt : (rule.outExt || fileExt)
     const outFullPath = `${outFilePath}/${outFileBaseName}${outFileExt}`
 
     console.log(outFullPath)
 
     asset = { ...asset, outFilePath, outFileBaseName, outFileExt, outFullPath }
 
-    if (rule.processFile !== undefined) asset = rule.processFile(asset)
+    if (!asset.pass_through) {
+      if (rule.processFile !== undefined) asset = rule.processFile(asset)
 
-    if (asset.textFile) asset.body = applyHandlebars(asset.body, asset)
-    if (rule.needsLayout || asset.needsLayout) asset = applyLayout(asset)
+      if (asset.textFile) asset.body = applyHandlebars(asset.body, asset)
+      if (rule.needsLayout || asset.needsLayout) asset = applyLayout(asset)
+    }
 
     createDirectoryRecursive(outFilePath)
 
