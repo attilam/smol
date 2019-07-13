@@ -77,7 +77,17 @@ const applyHandlebars = (template, context) => Handlebars.compile(template)(cont
 
 // === Theme support
 //
-const themeDirectory = `./themes/${config.theme}`
+const themeDirectory = `themes/${config.theme}`
+
+// add theme's assets directory to routes
+const themeAssetsDirectory = `${themeDirectory}/assets/`
+
+if (fs.existsSync(themeAssetsDirectory)) {
+  config.routes[`theme:${config.theme}`] = {
+    sourcePath: themeAssetsDirectory,
+    destPath: '/'
+  }
+}
 
 walkDirectoriesSync(`${themeDirectory}/partials`).forEach(partial => {
   const partialName = path.basename(partial, path.extname(partial))
@@ -127,6 +137,8 @@ deleteDirectoryRecursive(config.destPath)
 // first gather all assets, create metadata/context
 for (let key in config.routes) {
   const route = config.routes[key]
+
+  console.log(`route: ${key}`)
 
   walkDirectoriesSync(route.sourcePath).forEach(fileFullPath => {
     if (route.skip !== undefined && route.skip.find(skip => fileFullPath.includes(skip))) return
