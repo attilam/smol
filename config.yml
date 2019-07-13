@@ -3,6 +3,8 @@ title: "Attilam :: WORD :: "
 description: "@attilam's Homepage"
 author: "@attilam"
 
+theme: 'basic'
+
 destPath: 'public/'
 
 # smol will gather all files from the paths below
