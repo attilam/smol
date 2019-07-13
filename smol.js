@@ -116,13 +116,13 @@ Handlebars.registerHelper('assets', (context) => {
     })
   }
 
-  let result = ''
-  for (let i = 0; i < items.length; i++) {
-    context.data.index = i
-    result += context.fn(items[i])
-  }
+  context.data.index = 0
+  return items.reduce((acc, item) => {
+    acc += context.fn(item)
+    context.data.index++
 
-  return result
+    return acc
+  }, '')
 })
 
 // === Theme support
