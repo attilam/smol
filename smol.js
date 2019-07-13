@@ -95,30 +95,23 @@ function applyLayout (context) {
 
 // === Files and filters
 //
-const assets = []
-
 const fileRules = [
   {
     match: fileName => /\.(md|markdown)$/.test(fileName),
     outExt: '.html',
     needsLayout: true,
     processFile: (context) => {
-      context.body = applyHandlebars(markdownToHTML(context.body), context)
+      context.body = markdownToHTML(context.body)
       return context
     }
   },
   {
     match: fileName => /\.(htm|html)$/.test(fileName),
     outExt: '.html',
-    needsLayout: true,
-    processFile: (context) => {
-      context.body = applyHandlebars(context.body, context)
-      return context
-    }
+    needsLayout: true
   },
   { // fallback rule: just copy file as-is
-    match: fileName => true,
-    processFile: (context) => (context)
+    match: fileName => true
   }
 ]
 
@@ -130,7 +123,7 @@ for (let key in config.routes) {
   const route = config.routes[key]
 
   walkDirectoriesSync(route.sourcePath).forEach(file => {
-    if (route.skip !== undefined && route.skip.some(skip => file.includes(skip))) return
+    if (route.skip !== undefined && route.skip.find(skip => file.includes(skip))) return
 
     const filePath = path.dirname(file.replace(route.sourcePath, ''))
     const fileName = path.basename(file)
@@ -140,37 +133,29 @@ for (let key in config.routes) {
     let asset = { filePath, fileName, fileExt, fileBaseName }
     asset = { ...route, site: config, ...asset }
 
-    if (config.textFiles.some(fext => fileExt === fext)) {
+    if (config.textFiles.includes(fileExt)) {
       const res = frontMatter(fs.readFileSync(file, 'utf8'))
 
       asset = { ...asset, ...res.attributes, body: res.body, textFile: true }
     }
 
-    if (asset.is_draft === true) return
+    if (asset.is_draft) return
 
-    let rule
-    for (const f of fileRules) {
-      if (f.match(file)) {
-        rule = f
-        break
-      }
-    }
-
-    asset = rule.processFile(asset)
-
-    if (rule.needsLayout || asset.needsLayout) {
-      asset = applyLayout(asset)
-    }
+    let rule = fileRules.find(r => r.match(file))
 
     const outFilePath = path.join(config.destPath, route.destPath, filePath)
     const outFileBaseName = asset.slug || fileBaseName
     const outFileExt = rule.outExt || fileExt
     const outFullPath = `${outFilePath}/${outFileBaseName}${outFileExt}`
 
-    asset = { ...asset, outFilePath, outFileBaseName, outFileExt, outFullPath }
-    assets.push(asset)
-
     console.log(outFullPath)
+
+    asset = { ...asset, outFilePath, outFileBaseName, outFileExt, outFullPath }
+
+    if (rule.processFile !== undefined) asset = rule.processFile(asset)
+
+    if (asset.textFile) asset.body = applyHandlebars(asset.body, asset)
+    if (rule.needsLayout || asset.needsLayout) asset = applyLayout(asset)
 
     createDirectoryRecursive(outFilePath)
 
@@ -181,6 +166,3 @@ for (let key in config.routes) {
     }
   })
 }
-
-console.log(assets.length)
-console.log(assets[2])
