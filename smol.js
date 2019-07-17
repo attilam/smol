@@ -2,6 +2,7 @@
 //
 const fs = require('fs')
 const path = require('path')
+const execSync = require('child_process').execSync
 
 // via https://gist.github.com/kethinov/6658166
 const walkDirectoriesSync = (dir, filelist = []) => {
@@ -272,6 +273,15 @@ function applyLayout (context) {
   return context
 }
 
+// === Image processing
+//
+function resizeImage (inFile, outFile, resX, resY) {
+  const crop = `${resX}x${resY}+0+0`
+  const command = `convert ${inFile} -resize ${resX}x -resize x${resY} -gravity center -crop ${crop} +repage ${outFile}`
+
+  execSync(command)
+}
+
 // === Files and filters
 //
 const assets = []
@@ -281,7 +291,7 @@ const fileRules = [
     match: fileName => /\.(md|markdown)$/.test(fileName),
     outExt: '.html',
     needsLayout: true,
-    processFile: (context) => {
+    processFile: context => {
       context.body = markdownToHTML(context.body)
       return context
     }
@@ -290,6 +300,19 @@ const fileRules = [
     match: fileName => /\.(htm|html)$/.test(fileName),
     outExt: '.html',
     needsLayout: true
+  },
+  {
+    match: fileName => /\.(png|jpg|jpeg)$/.test(fileName),
+    processFile: context => {
+      const resX = 320
+      const resY = 200
+
+      const outFile = `${context.outFilePath}/${context.outFileBaseName}_${resX}x${resY}${context.outFileExt}`
+
+      resizeImage(context.fileFullPath, outFile, resX, resY)
+
+      return context
+    }
   },
   { // fallback rule: just copy file as-is
     match: fileName => true

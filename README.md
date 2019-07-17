@@ -44,6 +44,7 @@ For example if a page has the `layout` specified in the YAML front-matter it wil
   - DONE ~~`is_draft`: skip file~~
   - DONE ~~`pass_through`: don't do any compilation with the file, just let it through~~
   - add date handling for pages, via front matter/file info, create Handlebars helper(s)
+  - add extra post-process ability (e.g. minify output)
   - `needsLayout` is wrong, maybe use e.g. `layout: NULL` instead, asset should overrule fileRule!
   - use semantic HTML throughout https://www.lifewire.com/why-use-semantic-html-3468271
   - RSS/Atom support
@@ -53,6 +54,7 @@ For example if a page has the `layout` specified in the YAML front-matter it wil
   - DONE ~~copy assets into place in `public` directory~~
   - compile SASS/SCSS maybe (if I'll need it)
   - DONE ~~Assets could be just another route, but all content is pass-through!~~
+  - generate different versions of images (e.g. for thumbnails)
 
 - Layouts and Partials
   - DONE ~~add theme support~~
