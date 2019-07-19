@@ -49,6 +49,10 @@ For example if a page has the `layout` specified in the YAML front-matter it wil
   - use semantic HTML throughout https://www.lifewire.com/why-use-semantic-html-3468271
   - RSS/Atom support
   - move syntax highlighting out of Simple-Markdown
+  - instead of `skip`, make it possible to override `fileRules` in `config.yml` for files matching a pattern
+  - DONE ~~use SVGO to optimize SVGs https://github.com/svg/svgo~~
+  - make it possible to embed SVGs into pages
+  - try sqip? https://github.com/axe312ger/sqip
 
 - Assets
   - DONE ~~copy assets into place in `public` directory~~

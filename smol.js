@@ -282,6 +282,12 @@ function resizeImage (inFile, outFile, resX, resY) {
   execSync(command)
 }
 
+function optimizeSVG(inFile) {
+  const command = `svgo ${inFile} -o -`
+
+  return execSync(command).toString()
+}
+
 // === Files and filters
 //
 const assets = []
@@ -310,6 +316,14 @@ const fileRules = [
       const outFile = `${context.outFilePath}/${context.outFileBaseName}_${resX}x${resY}${context.outFileExt}`
 
       resizeImage(context.fileFullPath, outFile, resX, resY)
+
+      return context
+    }
+  },
+  {
+    match: fileName => /\.(svg)$/.test(fileName),
+    processFile: context => {
+      context.body = optimizeSVG(context.fileFullPath)
 
       return context
     }
