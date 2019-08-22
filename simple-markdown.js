@@ -70,6 +70,8 @@ var hljs = require('highlight.js');
     return state
   }
 
+  var slugify = text => text.replace(/\s+/g, '-').replace(/([^a-z0-9-]+)/gi, '').toLowerCase()
+
   /**
  * Creates a parser for a given set of rules, with the precedence
  * specified as a list of rules.
@@ -621,7 +623,11 @@ var hljs = require('highlight.js');
         }
       },
       html: function (node, output, state) {
-        return htmlTag('h' + node.level, output(node.content, state), null, true, 1)
+        var txt = output(node.content, state)
+        var attributes = {
+          id: slugify(txt)
+        }
+        return htmlTag('h' + node.level, txt, attributes, true, 1)
       }
     },
     nptable: {
