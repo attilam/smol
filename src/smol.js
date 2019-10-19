@@ -1,11 +1,11 @@
 // === smol.js -- 2019 @attilam
 //
-const fs = require('./src/fs')
+const fs = require('./fs')
 const path = require('path')
 const execSync = require('child_process').execSync
-const SimpleMarkdown = require('./src/simple-markdown')
+const SimpleMarkdown = require('./simple-markdown')
 
-require('./src/hb-helpers')
+require('./hb-helpers')
 
 // === YAML, front matter & config stuff
 //

@@ -1,2 +1,2 @@
 #!/usr/bin/env node
-require(__dirname+'/smol.js');
+require(__dirname+'/src/smol.js');
